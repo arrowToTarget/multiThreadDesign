@@ -285,7 +285,6 @@ public class TaskProcessor {
                 @Override
                 public T call() throws Exception {
                     try {
-
                         System.out.println(Thread.currentThread().getName()+" semaphore acquire  before: "+semaphore.availablePermits());
                         semaphore.acquire();
                         System.out.println(Thread.currentThread().getName()+" semaphore acquire  after: "+semaphore.availablePermits());
