@@ -8,6 +8,7 @@ public class TaskProcessorFactory {
     private static final int DEFAULT_CORE_SIZE = Runtime.getRuntime().availableProcessors();
 
     private static final int DEFAULT_POOL_SIZE = DEFAULT_CORE_SIZE * 2;
+
     private int coreSize = DEFAULT_CORE_SIZE;
 
     private int poolSize = DEFAULT_POOL_SIZE;
