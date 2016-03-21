@@ -1,5 +1,6 @@
 package com.lewis.multiThread.blockingQueue.syn;
 
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -14,9 +15,12 @@ public class Request {
     //请求内存
     private String content;
 
-    public Request(int id, String content) {
+    private String contextThread;
+
+    public Request(int id, String content,String contentThread) {
         this.id = id;
         this.content = content;
+        this.contextThread = contentThread;
     }
 
     public int getId() {
@@ -40,8 +44,10 @@ public class Request {
         return "Request{" +
                 "id=" + id +
                 ", content='" + content + '\'' +
+                ", contextThread='" + contextThread + '\'' +
                 '}';
     }
+
     private Lock  lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
     public void doSom(){
@@ -75,7 +81,7 @@ public class Request {
 
     public static void main(String[] args) {
         System.out.println("haha");
-        final Request request = new Request(100, "haha");
+        final Request request = new Request(100, "haha", Thread.currentThread().getName());
         new Thread(){
             @Override
             public void run() {
