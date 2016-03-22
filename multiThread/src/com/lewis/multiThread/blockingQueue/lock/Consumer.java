@@ -6,9 +6,7 @@ import com.lewis.multiThread.blockingQueue.syn.Test;
 import java.util.Date;
 import java.util.Random;
 
-/**
- * Created by zhangminghua on 2016/3/21.
- */
+
 public class Consumer {
     private final BlockingQueue queue;
 

@@ -2,13 +2,10 @@ package com.lewis.multiThread.blockingQueue.lock;
 
 import com.lewis.multiThread.blockingQueue.Request;
 import com.lewis.multiThread.blockingQueue.syn.Test;
-
 import java.util.Date;
 import java.util.Random;
 
-/**
- * Created by zhangminghua on 2016/3/21.
- */
+
 public class Producer {
     private final BlockingQueue queue;
 

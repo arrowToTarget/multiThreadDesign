@@ -4,9 +4,7 @@ package com.lewis.multiThread.blockingQueue.lock;
 
 import java.text.SimpleDateFormat;
 
-/**
- * Created by zhangminghua on 2016/3/21.
- */
+
 public class Test {
     public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssSSS");
 
