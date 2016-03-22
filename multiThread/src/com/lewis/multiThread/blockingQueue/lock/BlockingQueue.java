@@ -75,4 +75,18 @@ public class BlockingQueue {
     public int size(){
         return count;
     }
+
+    //取走所有的请求
+    public void clear(){
+        if (lock.tryLock()){
+            try {
+                count = 0;
+                header = 0;
+                tail = 0;
+                notFull.signalAll();
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
 }

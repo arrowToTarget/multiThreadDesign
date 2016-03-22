@@ -16,7 +16,7 @@ public class Test {
        Thread pA=  new Thread(){
             @Override
             public void run() {
-                new Producer(queue).createRequest(25);
+                new Producer(queue).createRequest();
             }
         };
         pA.setName("Producer_A");
@@ -26,7 +26,7 @@ public class Test {
         Thread pB=  new Thread(){
             @Override
             public void run() {
-                new Producer(queue).createRequest(25);
+                new Producer(queue).createRequest();
             }
         };
         pB.setName("Producer_B");
@@ -35,7 +35,7 @@ public class Test {
         Thread pC=  new Thread(){
             @Override
             public void run() {
-                new Producer(queue).createRequest(25);
+                new Producer(queue).createRequest();
             }
         };
         pC.setName("Producer_C");
@@ -58,6 +58,40 @@ public class Test {
         };
         cB.setName("Consumer_B");
         cB.start();
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+
+        }
+        System.out.println("begin interrupt");
+        pA.interrupt();
+        pB.interrupt();
+        pC.interrupt();
+        cA.interrupt();
+        cB.interrupt();
+
+
+/*       Thread clearThread=  new Thread(){
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+
+                    }
+                    if (queue.size() == 20) {
+                        System.out.println("queue size reached threshold : begin clear method...");
+                        queue.clear();
+                        System.out.println("queue size reached threshold : after clear method...");
+                    }
+                }
+            }
+        };
+        clearThread.setName("clearThread ");
+        clearThread.start();*/
+
+
     }
 
 

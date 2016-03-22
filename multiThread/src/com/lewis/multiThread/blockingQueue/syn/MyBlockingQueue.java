@@ -75,4 +75,11 @@ public class MyBlockingQueue {
         return count;
     }
 
+    public synchronized void clear(){
+        header = 0;
+        tail =0;
+        count = 0;
+        notifyAll();
+    }
+
 }

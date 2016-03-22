@@ -18,22 +18,17 @@ public class Consumer {
         this.queue = queue;
     }
 
+    private boolean terimated = false;
     public void processRequest(){
-        while (true) {
+        while (!terimated) {
             try {
                 Thread.sleep(random.nextInt(1000));
+                Request  take = queue.take();
+                System.out.println(Thread.currentThread().getName() +"consumer :"+take.toString()+" take after queue size :" +queue.size()+" time:"+ Test.sdf.format(new Date()));
             } catch (InterruptedException e) {
-
+                terimated = true;
+                System.out.println(Thread.currentThread().getName()+" enter interruptedException");
             }
-            Request take = null;
-            try {
-                take = queue.take();
-            } catch (InterruptedException e) {
-                //
-            }
-            System.out.println(Thread.currentThread().getName() +"consumer :"+take.toString()+" take after queue size :" +queue.size()+" time:"+ Test.sdf.format(new Date()));
-
-
         }
     }
 }

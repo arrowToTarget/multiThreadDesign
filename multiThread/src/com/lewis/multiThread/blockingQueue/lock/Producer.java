@@ -18,22 +18,23 @@ public class Producer {
         this.queue = queue;
     }
 
-    public void createRequest(int requestNumber){
-        for (int i = 1; i <= requestNumber; i++) {
+    private boolean termiated = false;
+
+    public void createRequest(){
+        int i = 0;
+        while (!termiated) {
             try {
                 Thread.sleep(random.nextInt(1000));
-            } catch (InterruptedException e) {
-
-            }
-            Request request = new Request(i,"request_"+i, Thread.currentThread().getName());
-            try {
+                i++;
+                Request request = new Request(i,"request_"+i, Thread.currentThread().getName());
                 queue.put(request);
+                System.out.println(Thread.currentThread().getName() +" produce : "+request.toString() +" put after queue size :" +queue.size() +" time:"+ Test.sdf.format(new Date()));
             } catch (InterruptedException e) {
-                //do process
+                System.out.println(Thread.currentThread().getName()+ " enter interruptedException");
+                termiated = true;
             }
-            System.out.println(Thread.currentThread().getName() +" produce : "+request.toString() +" put after queue size :" +queue.size() +" time:"+ Test.sdf.format(new Date()));
-
         }
+
     }
 
 }
