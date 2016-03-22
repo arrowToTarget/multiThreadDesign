@@ -1,6 +1,7 @@
 package com.lewis.multiThread.blockingQueue.syn;
 
 
+import com.lewis.multiThread.blockingQueue.Request;
 
 /**
  * Created by zhangminghua on 2016/3/18.

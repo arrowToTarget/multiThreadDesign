@@ -1,6 +1,5 @@
-package com.lewis.multiThread.blockingQueue.syn;
+package com.lewis.multiThread.blockingQueue;
 
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;

@@ -1,6 +1,7 @@
-package com.lewis.multiThread.blockingQueue.syn;
+package com.lewis.multiThread.blockingQueue.lock;
 
 import com.lewis.multiThread.blockingQueue.Request;
+import com.lewis.multiThread.blockingQueue.syn.Test;
 
 import java.util.Date;
 import java.util.Random;
@@ -9,11 +10,11 @@ import java.util.Random;
  * Created by zhangminghua on 2016/3/21.
  */
 public class Producer {
-    private final MyBlockingQueue queue;
+    private final BlockingQueue queue;
 
     private Random random = new Random();
 
-    public Producer(MyBlockingQueue queue) {
+    public Producer(BlockingQueue queue) {
         this.queue = queue;
     }
 
@@ -25,8 +26,11 @@ public class Producer {
 
             }
             Request request = new Request(i,"request_"+i, Thread.currentThread().getName());
-            //System.out.println(Thread.currentThread().getName()+" put before queue size :" +queue.size());
-            queue.put(request);
+            try {
+                queue.put(request);
+            } catch (InterruptedException e) {
+                //do process
+            }
             System.out.println(Thread.currentThread().getName() +" produce : "+request.toString() +" put after queue size :" +queue.size() +" time:"+ Test.sdf.format(new Date()));
 
         }

@@ -1,4 +1,4 @@
-package com.lewis.multiThread.blockingQueue.syn;
+package com.lewis.multiThread.blockingQueue.lock;
 
 
 
@@ -11,7 +11,7 @@ public class Test {
     public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssSSS");
 
     public static void main(String[] args) {
-        final MyBlockingQueue queue = new MyBlockingQueue(20);
+        final BlockingQueue queue = new BlockingQueue(20);
 
        Thread pA=  new Thread(){
             @Override
