@@ -19,6 +19,7 @@ public class Test {
         };
         pA.setName("Producer_A");
         pA.start();
+        Thread.State state = pA.getState();
 
 
         Thread pB=  new Thread(){
