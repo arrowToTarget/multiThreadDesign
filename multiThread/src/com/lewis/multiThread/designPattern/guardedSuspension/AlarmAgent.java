@@ -46,6 +46,14 @@ public class AlarmAgent {
         }
     }
 
+    public void init(){
+        //省略其他代码
+        //告警连接线程
+        Thread connectingThread = new Thread(new ConnectingTask());
+        connectingThread.start();
+        heartBeatTimer.schedule(new HeartBeatTask(),6000,2000);
+    }
+
     public void disconnect(){
         connectedToServer = false;
     }
