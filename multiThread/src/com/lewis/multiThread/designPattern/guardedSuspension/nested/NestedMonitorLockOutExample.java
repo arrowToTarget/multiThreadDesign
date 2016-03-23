@@ -8,6 +8,8 @@ import com.lewis.multiThread.designPattern.guardedSuspension.Predict;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by Administrator on 2016/3/22.
@@ -45,26 +47,35 @@ public class NestedMonitorLockOutExample {
                 return isStateOK;
             }
         };
+        private Lock lock = new ReentrantLock();
+        private Blocker blocker = new ConditionVarBlocker(lock);
 
-        private Blocker blocker = new ConditionVarBlocker();
 
-        public synchronized   String xGuardedMethod(final String message){
-            GuardedAction<String> guardedAction = new GuardedAction<String>(predict) {
-                @Override
-                public String call() throws Exception {
-                    return message + " -> received.";
-                }
-            };
-            String result = null;
+
+        public  String xGuardedMethod(final String message){
+            lock.lock();
             try {
-                result = blocker.callWithGuard(guardedAction);
-            } catch (Exception e) {
-                e.printStackTrace();
+                    GuardedAction<String> guardedAction = new GuardedAction<String>(predict) {
+                        @Override
+                        public String call() throws Exception {
+                            return message + " -> received.";
+                        }
+                    };
+                    String result = null;
+                    try {
+                        result = blocker.callWithGuard(guardedAction);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return result;
+            } finally {
+                lock.unlock();
             }
-            return result;
+
         }
 
-        public synchronized void xStateChanged(){
+        public  void xStateChanged(){
+            lock.lock();
             try {
                 blocker.signalAfter(new Callable<Boolean>() {
                     @Override
@@ -76,6 +87,8 @@ public class NestedMonitorLockOutExample {
                 });
             } catch (Exception e) {
 
+            }finally {
+                lock.unlock();
             }
         }
     }
