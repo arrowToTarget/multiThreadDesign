@@ -1,0 +1,125 @@
+HashMap是存储键值对的集合，实现了Map接口
+//映射key到value的顶级接口，不能包含重复的key，一个key最多可以映射到一个value,键和值均可为null
+public interface Map<K,V> {
+
+    //返回该map包含的键值对的个数，如果键值对的个数超过了Integer.MAX_VALUE,则返会Integer.MAX_VALUE
+    int size();
+
+    //如果该Map没有包含键值对，则返回true，否则返回false
+    boolean isEmpty();
+
+    //判断该map是否包含指定的key所对应的键值对，key可以为null
+    boolean containsKey(Object key);
+
+    //判断该map是否包含指定的value所对应的键值对,若map中包含有一个以上的key,对应指定的value,则返回true，value可以为null
+    boolean containsValue(Object value);
+
+    //返回指定的key所对应的value，若key不存在，则返回null;但是返回null的key,不代表key在map中不存在，有可能是key所对应的value为null
+    V get(Object key);
+
+    //将指定的key和value映射为一个键值对，放入map中；若之前该map中包含了指定的Key,则该key所对应的老的值oldValue将会被替换为value
+    V put(K key, V value);
+
+    //删除指定的key所对应的键值对，并返回该key对应的value
+    V remove(Object key);
+
+    //将指定的map中的键值对复制到当前map中
+    void putAll(Map<? extends K, ? extends V> m);
+
+    //清除map中所有的键值对，该操作完成后，该map就是空的了
+    void clear();
+
+    //将map中所有的key返回，由于map中的key是不能重复的，所以用Set集合的方式装载所有的key
+    Set<K> keySet();
+
+    //将map中所有的value返回，由于map中的value是可重复的，所以用Collection集合的方式装载所有的value
+    Collection<V> values();
+
+    //将map中所有的键值对Entry返回，由于map中的键值对是不可重复的（key不可重复），所以用Set集合的方式装载所有的value
+    Set<Map.Entry<K, V>> entrySet();
+
+    //Map中承载键值对的数据结构Entry
+    interface Entry<K,V> {
+
+        //返回键值对的键值key
+        K getKey();
+
+        //返回键值对的value值
+        V getValue();
+
+        //将当前键值对的value值 替换为指定的value值
+        V setValue(V value);
+
+        //判断指定的对象和当前键值对是否equals相等，若相等，则代表是同一个键值对；
+        boolean equals(Object o);
+
+        //返回当前键值对的hashCode值
+        int hashCode();
+    }
+
+    //判断指定对象和当前Map的equals是否相等
+    boolean equals(Object o);
+
+    //返回当前Map的hashCode
+    int hashCode();
+}
+
+HashMap是基于hash表来实现Map结构的，HashMap维护了下面几个变量：
+
+    //Map默认的初始化大小为16
+    static final int DEFAULT_INITIAL_CAPACITY = 16;
+
+    //Map包含键值对的最大容量为2^30,map的容量一定要是2的幂
+    static final int MAXIMUM_CAPACITY = 1 << 30;
+
+    //默认的加载因子为0.75
+    static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
+    //装载键值对的内部容器Entry数组，长度一定得是2的幂
+    transient Entry[] table;
+
+    //Map中包含的键值对的个数
+    transient int size;
+
+    //HashMap的极限 当键值对的个数达到threshold时，数组table要扩容的
+    int threshold;
+
+    //加载因子
+    final float loadFactor;
+
+    //HashMap结构上被改变的次数，结构上的改变包括：键值对的大小的改变，修改HashMap的内部结构（比较进行了rehash操作），此属性用来保持fail-fast
+    transient volatile int modCount;
+
+下面看一下HashMap的构造函数：
+   //根据指定的容量initialCapacity和加载因子loadFactor构造HashMap
+    public HashMap(int initialCapacity, float loadFactor) {
+        //对initialCapacity进行参数校验，若小于0，则抛出IllegalArgumentException异常
+        if (initialCapacity < 0)
+            throw new IllegalArgumentException("Illegal initial capacity: " +
+                                               initialCapacity);
+        //若initialCapacity大于MAXIMUM_CAPACITY(2^30),则将MAXIMUM_CAPACITY赋值给initialCapacity
+        if (initialCapacity > MAXIMUM_CAPACITY)
+            initialCapacity = MAXIMUM_CAPACITY;
+        //对参数loadFactor进行有效性校验，不能<=0,不能非数字，否则抛出IllegalArgumentException异常
+        if (loadFactor <= 0 || Float.isNaN(loadFactor))
+            throw new IllegalArgumentException("Illegal load factor: " +
+                                               loadFactor);
+
+        // Find a power of 2 >= initialCapacity 找到一个2的幂的数capacity，使其不小于参数initialCapacity
+        int capacity = 1;
+        //若capacity小于initialCapacity,则将capacity扩大一倍
+        while (capacity < initialCapacity)
+            capacity <<= 1;
+
+        this.loadFactor = loadFactor;
+        //设置极限，大小为 capacity * loadFactor,即(容量*负载因子)
+        threshold = (int)(capacity * loadFactor);
+        //创建一个大小为capacity的Entry数组table,用来保存键值对
+        table = new Entry[capacity];
+        //调用方法init(),进行额外的初始化操作
+        init();
+    }
+    //init方法是空的，如果你定制额外的初始化操作，可以继承HashMap，覆盖init()方法
+    void init() {
+
+    }
