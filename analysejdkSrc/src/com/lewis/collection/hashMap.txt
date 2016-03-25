@@ -123,3 +123,16 @@ HashMap是基于hash表来实现Map结构的，HashMap维护了下面几个变�
     void init() {
 
     }
+
+    //通过指定的容量initialCapacity来构造HashMap，这里使用了默认的加载因子DEFAULT_LOAD_FACTOR 0.75
+    public HashMap(int initialCapacity) {
+            this(initialCapacity, DEFAULT_LOAD_FACTOR);
+    }
+
+    //无参的构造函数 加载因子为DEFAULT_LOAD_FACTOR 0.75，容量为默认的DEFAULT_INITIAL_CAPACITY 16，极限为 16*0.75=12
+    public HashMap() {
+            this.loadFactor = DEFAULT_LOAD_FACTOR;
+            threshold = (int)(DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
+            table = new Entry[DEFAULT_INITIAL_CAPACITY];
+            init();
+    }
