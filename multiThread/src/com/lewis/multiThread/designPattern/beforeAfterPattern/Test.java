@@ -32,8 +32,12 @@ public class Test {
         t.start();
 
         Map<String,String> map = new HashMap<String,String>();
-        map.put(null,null);
-        System.out.println(map.containsValue(null));
+        for (int i = 0; i < 20; i++) {
+            map.put("key"+i,"value_"+i);
+            if (i == 9) {
+                System.out.println("hehe");
+            }
+        }
     }
 
 }
