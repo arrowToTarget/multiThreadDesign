@@ -82,11 +82,14 @@ public class TaskProcessor {
                 });
                 futureList.add(future);
             }
-
+            boolean isSuccess = false;
             try {
-                latch.await();
+               isSuccess = latch.await(2,TimeUnit.SECONDS);
+                if (!isSuccess) {
+                    return resultList;
+                }
             } catch (InterruptedException e) {
-                //doLog
+                System.out.println("InterruptedException success :"+isSuccess);
             }
 
             try {
@@ -101,6 +104,26 @@ public class TaskProcessor {
             }
         }
         return resultList;
+    }
+
+    public static void main(String[] args) {
+        List<TaskCallable<Integer>> list = new LinkedList<TaskCallable<Integer>>();
+        for (int i = 0; i < 10; i++) {
+            list.add(new TaskCallable<Integer>() {
+                @Override
+                public Integer doCallable() throws Exception {
+                    Thread.sleep(2000);
+                    return 1+1;
+                }
+            });
+        }
+        TaskProcessor processor = new TaskProcessor(8,10);
+        long beginTime = System.currentTimeMillis();
+        List<Integer> integers = processor.executeTask(list);
+        for (Integer integer : integers) {
+            System.out.println(integer);
+        }
+        System.out.println("endTime is ="+(System.currentTimeMillis()-beginTime));
     }
 
     /**

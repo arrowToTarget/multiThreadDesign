@@ -137,435 +137,435 @@ HashMap是基于hash表来实现Map结构的，HashMap维护了下面几个变�
             init();
     }
 
-    //构造一个新的HashMap，以承载指定Map中所有的键值对，使用默认的加载因子DEFAULT_LOAD_FACTOR
-    public HashMap(Map<? extends K, ? extends V> m) {
-        this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1,
-                      DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR);
-        //调用putAllForCreate(Map<? extends K, ? extends V>)方法完成元素的迁移
-        putAllForCreate(m);
-    }
+//构造一个新的HashMap，以承载指定Map中所有的键值对，使用默认的加载因子DEFAULT_LOAD_FACTOR
+public HashMap(Map<? extends K, ? extends V> m) {
+    this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1,
+                  DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR);
+    //调用putAllForCreate(Map<? extends K, ? extends V>)方法完成元素的迁移
+    putAllForCreate(m);
+}
 
-    private void putAllForCreate(Map<? extends K, ? extends V> m) {
-        for (Iterator<? extends Map.Entry<? extends K, ? extends V>> i = m.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry<? extends K, ? extends V> e = i.next();
-            //在迭代器循环中调用putForCreate(K k,V v)来实现元素的创建
-            putForCreate(e.getKey(), e.getValue());
+private void putAllForCreate(Map<? extends K, ? extends V> m) {
+    for (Iterator<? extends Map.Entry<? extends K, ? extends V>> i = m.entrySet().iterator(); i.hasNext(); ) {
+        Map.Entry<? extends K, ? extends V> e = i.next();
+        //在迭代器循环中调用putForCreate(K k,V v)来实现元素的创建
+        putForCreate(e.getKey(), e.getValue());
+    }
+}
+
+//该方法和put方法不同，它不会进行数组的扩容resize,和对modCount的检查
+private void putForCreate(K key, V value) {
+    //若key为null,则hash值为0；若key != null,则利用hash(int)计算key的hash值
+    int hash = (key == null) ? 0 : hash(key.hashCode());
+    //求key应该放入哪个hash桶(bucket)内
+    int i = indexFor(hash, table.length);
+    //遍历链表，若key之前在Map中已经有了，则直接返回
+    for (Entry<K,V> e = table[i]; e != null; e = e.next) {
+        Object k;
+        if (e.hash == hash &&
+            ((k = e.key) == key || (key != null && key.equals(k)))) {
+            e.value = value;
+            return;
         }
     }
+    //调用createEntry(int hash,K k,V v,int bucketIndex)方法完成键值对的创建并加入到链表中
+    createEntry(hash, key, value, i);
+}
 
-    //该方法和put方法不同，它不会进行数组的扩容resize,和对modCount的检查
-    private void putForCreate(K key, V value) {
-        //若key为null,则hash值为0；若key != null,则利用hash(int)计算key的hash值
-        int hash = (key == null) ? 0 : hash(key.hashCode());
-        //求key应该放入哪个hash桶(bucket)内
-        int i = indexFor(hash, table.length);
-        //遍历链表，若key之前在Map中已经有了，则直接返回
-        for (Entry<K,V> e = table[i]; e != null; e = e.next) {
-            Object k;
-            if (e.hash == hash &&
-                ((k = e.key) == key || (key != null && key.equals(k)))) {
-                e.value = value;
-                return;
-            }
+void createEntry(int hash, K key, V value, int bucketIndex) {
+    //将bucketIndex位置的元素取出来
+    Entry<K,V> e = table[bucketIndex];
+    //创建一个新的键值对，使用给定的hash、key、value,并将新键值对next指向e,最后将新键值对放在bucketIndex处
+    table[bucketIndex] = new Entry<K,V>(hash, key, value, e);
+    //将数组大小size + 1
+    size++;
+}
+
+//Entry是HashMap里面承载键值对数据的数据结构，实现了Map接口里面的Entry接口，除了方法recordAccess(HashMap<K,V> m),recordRemoval(HashMap<K,V> m)外，其他方法
+//均为final方法，表示即使是子类也不能覆写这些方法。
+static class Entry<K,V> implements Map.Entry<K,V> {
+        //键值,被final修饰，表明一旦赋值，不可修改
+        final K key;
+        //value值
+        V value;
+        //下一个键值对的引用
+        Entry<K,V> next;
+        //当前键值对中键值的hash值
+        final int hash;
+
+        /**
+         * Creates new entry.
+         */
+        Entry(int h, K k, V v, Entry<K,V> n) {
+            value = v;
+            next = n;
+            key = k;
+            hash = h;
         }
-        //调用createEntry(int hash,K k,V v,int bucketIndex)方法完成键值对的创建并加入到链表中
-        createEntry(hash, key, value, i);
-    }
 
-    void createEntry(int hash, K key, V value, int bucketIndex) {
-        //将bucketIndex位置的元素取出来
-	    Entry<K,V> e = table[bucketIndex];
-	    //创建一个新的键值对，使用给定的hash、key、value,并将新键值对next指向e,最后将新键值对放在bucketIndex处
-        table[bucketIndex] = new Entry<K,V>(hash, key, value, e);
-        //将数组大小size + 1
-        size++;
-    }
+        public final K getKey() {
+            return key;
+        }
 
-    //Entry是HashMap里面承载键值对数据的数据结构，实现了Map接口里面的Entry接口，除了方法recordAccess(HashMap<K,V> m),recordRemoval(HashMap<K,V> m)外，其他方法
-    //均为final方法，表示即使是子类也不能覆写这些方法。
-    static class Entry<K,V> implements Map.Entry<K,V> {
-            //键值,被final修饰，表明一旦赋值，不可修改
-            final K key;
-            //value值
-            V value;
-            //下一个键值对的引用
-            Entry<K,V> next;
-            //当前键值对中键值的hash值
-            final int hash;
+        public final V getValue() {
+            return value;
+        }
 
-            /**
-             * Creates new entry.
-             */
-            Entry(int h, K k, V v, Entry<K,V> n) {
-                value = v;
-                next = n;
-                key = k;
-                hash = h;
-            }
-
-            public final K getKey() {
-                return key;
-            }
-
-            public final V getValue() {
-                return value;
-            }
-
-            //设置value值，返回原来的value值
-            public final V setValue(V newValue) {
-    	    V oldValue = value;
-                value = newValue;
-                return oldValue;
-            }
-            //比较键值对是否equals相等，只有键、值都相等的情况下，才equals相等
-            public final boolean equals(Object o) {
-                if (!(o instanceof Map.Entry))
-                    return false;
-                Map.Entry e = (Map.Entry)o;
-                Object k1 = getKey();
-                Object k2 = e.getKey();
-                //若k1 == k2(k1,k2引用同一个对象),或者k1.equals(k2)为true时，进而判断value值是否相等
-                if (k1 == k2 || (k1 != null && k1.equals(k2))) {
-                    Object v1 = getValue();
-                    Object v2 = e.getValue();
-                    //若v1 == v2(v1,v2引用同一个对象),或者v1.equals(v2)为true时，此时才能说当前的键值对和指定的的对象equals相等
-                    if (v1 == v2 || (v1 != null && v1.equals(v2)))
-                        return true;
-                }
-                //其他均为false
+        //设置value值，返回原来的value值
+        public final V setValue(V newValue) {
+        V oldValue = value;
+            value = newValue;
+            return oldValue;
+        }
+        //比较键值对是否equals相等，只有键、值都相等的情况下，才equals相等
+        public final boolean equals(Object o) {
+            if (!(o instanceof Map.Entry))
                 return false;
+            Map.Entry e = (Map.Entry)o;
+            Object k1 = getKey();
+            Object k2 = e.getKey();
+            //若k1 == k2(k1,k2引用同一个对象),或者k1.equals(k2)为true时，进而判断value值是否相等
+            if (k1 == k2 || (k1 != null && k1.equals(k2))) {
+                Object v1 = getValue();
+                Object v2 = e.getValue();
+                //若v1 == v2(v1,v2引用同一个对象),或者v1.equals(v2)为true时，此时才能说当前的键值对和指定的的对象equals相等
+                if (v1 == v2 || (v1 != null && v1.equals(v2)))
+                    return true;
             }
-
-            public final int hashCode() {
-                return (key==null   ? 0 : key.hashCode()) ^
-                       (value==null ? 0 : value.hashCode());
-            }
-
-            public final String toString() {
-                return getKey() + "=" + getValue();
-            }
-
-            //此方法只有在key已存在的时候调用m.put(key,value)方法时，才会被调用，即覆盖原来key所对应的value值时被调用
-            void recordAccess(HashMap<K,V> m) {
-            }
-            //此方法在当前键值对被remove时调用
-            void recordRemoval(HashMap<K,V> m) {
-            }
+            //其他均为false
+            return false;
         }
+
+        public final int hashCode() {
+            return (key==null   ? 0 : key.hashCode()) ^
+                   (value==null ? 0 : value.hashCode());
+        }
+
+        public final String toString() {
+            return getKey() + "=" + getValue();
+        }
+
+        //此方法只有在key已存在的时候调用m.put(key,value)方法时，才会被调用，即覆盖原来key所对应的value值时被调用
+        void recordAccess(HashMap<K,V> m) {
+        }
+        //此方法在当前键值对被remove时调用
+        void recordRemoval(HashMap<K,V> m) {
+        }
+}
 
     我们看一看HashMap的put方法的具体实现：
-    //将指定的键key,值value放到HashMap中
-    public V put(K key, V value) {
-        //首先判断键key是否为null,若为null,则调用putForNullKey(V v)方法完成put
-        if (key == null)
-            return putForNullKey(value);
-        //程序走到这，说明key不为null了，先调用hash(int)方法，计算key.hashCode的hash值
-        int hash = hash(key.hashCode());
-        //再调用indexFor(int,int)方法求出此hash值对应在table数组的哪个下标i上 (bucket桶)
-        int i = indexFor(hash, table.length);
-        //遍历bucket桶上面的链表元素，找出HashMap中是否有相同的key存在，若存在，则替换其value值，返回原来的value值
-        for (Entry<K,V> e = table[i]; e != null; e = e.next) {
-            Object k;
-            //若元素e.hash值和上面计算的hash值相等，并且(e.key == 入参key,或者入参key equals 相等 e.key)，则说明HashMap中存在了和入参相同的key了，执行替换操作
-            if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
-                V oldValue = e.value;
-                e.value = value;
-                //在执行替换操作的时候，调用Entry对象的recordAccess(HashMap<K,V> m)方法，这个上面说过了
-                e.recordAccess(this);
-                return oldValue;
-            }
-        }
-        //程序走到这，说明原来HashMap中不存在key,则直接将键值对插入即可，由于插入元素，修改了HashMap的结构，因此将modeCount+1
-        modCount++;
-        //调用addEntry(int,K,V,int)方法进行键值对的插入
-        addEntry(hash, key, value, i);
-        //由于原来HashMap中不存在key，则不存在替换value值问题，因此返回null
-        return null;
-    }
-
-    下面看看key为Null时，数据的插入实现：
-    先看看HashMap中原先是否有key为null的键值对存在，若存在，则替换原来的value值；若不存在，则将key为null的键值对插入到Entry数组的第一个位置table[0]
-    private V putForNullKey(V value) {
-        //获取Entry数组的第一个元素:table[0],然后通过e.next进行链表的遍历，若遍历过程中有元素e.key为null,则替换该元素的值
-        for (Entry<K,V> e = table[0]; e != null; e = e.next) {
-            //说明原来之前HashMap中就已经存在key问null的键值对了，现在又插入了一个key为null的新元素，则替换掉原来的key为null的value值
-            if (e.key == null) {
-                V oldValue = e.value;
-                e.value = value;
-                //在执行替换操作的时候，调用Entry对象的recordAccess(HashMap<K,V> m)方法，这个上面说过了
-                e.recordAccess(this);
-                return oldValue;
-            }
-        }
-        //由于插入元素，修改了HashMap的结构，因此将modeCount+1
-        modCount++;
-        //调用addEntry(int,K,V,int)方法进行键值对的插入,这里将入参hash设置为0，K为null,插入的位置index也为0，说明key为null的元素插入在bucket[0]第一个桶上
-        addEntry(0, null, value, 0);
-        return null;
-    }
-
-    //根据key的hashCode值，来计算key的hash值
-    static int hash(int h) {
-        // This function ensures that hashCodes that differ only by
-        // constant multiples at each bit position have a bounded
-        // number of collisions (approximately 8 at default load factor).
-        h ^= (h >>> 20) ^ (h >>> 12);
-        return h ^ (h >>> 7) ^ (h >>> 4);
-    }
-
-    /**
-    *在HashMap中要找到某个元素，需要根据key的hash值来求得对应数组中的位置,如何计算这个位置就是hash算法.
-    *HashMap的数据结构是数组和链表的结合,所以我们当然希望这个HashMap里面的元素位置尽量的分布均匀些，尽量使得每个位置上的元素数量只有一个,
-    *那么当我们用hash算法求得这个位置的时候，马上就可以知道对应位置的元素就是我们要的，而不用再去遍历链表.
-    *所以我们首先想到的就是把hashcode对数组长度取模运算，这样一来，元素的分布相对来说是比较均匀的,但是，“模”运算的消耗还是比较大的，
-    *能不能找一种更快速，消耗更小的方式那？java中时这样做的 :将hash值和数组长度按照位与&来运算
-    */
-    static int indexFor(int h, int length) {
-        return h & (length-1);
-    }
-
-    //将指定的key,value,hash,bucketIndex 插入键值对，若此时size 大于极限threshold,则将Entry数组table扩容到原来容量的两倍
-    void addEntry(int hash, K key, V value, int bucketIndex) {
-        //取出原来bucketIndex处的键值对e
-        Entry<K,V> e = table[bucketIndex];
-        //创建一个新的键值对，使用给定的hash、key、value,并将新键值对next指向e,最后将新键值对放在bucketIndex处
-        table[bucketIndex] = new Entry<K,V>(hash, key, value, e);
-        //将size+1,若此时size 大于极限threshold,则将Entry数组table扩容到原来容量的两倍
-        if (size++ >= threshold)
-            //调用resize(int)方法，进行数组的扩容
-            resize(2 * table.length);
-    }
-
-    //将HashMap中Entry数组table的容量扩容至新容量newCapacity,数组的扩容不但涉及到数组元素的复制，还要将原数组中的元素rehash到新的数组中，很耗时
-    //如果能预估到放入HashMap中元素的大小，最好使用new HashMap(size)方式创建足够容量的HashMap，避免不必要的数组扩容(rehash操作)，提高效率
-    void resize(int newCapacity) {
-        Entry[] oldTable = table;
-        int oldCapacity = oldTable.length;
-        //如果原数组的大小已经为允许的最大值MAXIMUM_CAPACITY了，则不能进行扩容了，这里仅仅将极限threshold设置为Integer.MAX_VALUE，然后返回
-        if (oldCapacity == MAXIMUM_CAPACITY) {
-            //将极限threshold设置为Integer.MAX_VALUE
-            threshold = Integer.MAX_VALUE;
-            return;
-        }
-        //程序走到这，说明可以进行扩容，先创建容量为newCapacity的新Entry数组newTable
-        Entry[] newTable = new Entry[newCapacity];
-        //调用tranfer(Entry[] newTable)方法，进行数组元素的移动和rehashing
-        transfer(newTable);
-        //将新数组newTable赋值给table
-        table = newTable;
-        //计算极限threshold的最新值
-        threshold = (int)(newCapacity * loadFactor);
-    }
-
-    //将原Entry数组table中的所有键值对迁移到新Entry数组newTable上
-    void transfer(Entry[] newTable) {
-        //原数组赋值给src
-        Entry[] src = table;
-        //新数组长度为newCapacity
-        int newCapacity = newTable.length;
-        //遍历原数组
-        for (int j = 0; j < src.length; j++) {
-            //获取原数组中的元素(键值对),赋值给e
-            Entry<K,V> e = src[j];
-            //若元素e不为null
-            if (e != null) {
-                //将当前元素设值为null
-                src[j] = null;
-                //遍历元素e所对应的bucket桶内的所有元素
-                do {
-                    //获取下一个元素next
-                    Entry<K,V> next = e.next;
-                    //重新计算键值对e在新数组newTable中的bucketIndex位置(即rehash操作)
-                    int i = indexFor(e.hash, newCapacity);
-                    //这步操作，说实话，没看懂，有清楚的，请不吝赐教
-                    e.next = newTable[i];
-                    //将当前元素e放入新数组的i位置
-                    newTable[i] = e;
-                    //将下一个元素next赋值给当前元素，以便完成遍历
-                    e = next;
-                } while (e != null);
-            }
+//将指定的键key,值value放到HashMap中
+public V put(K key, V value) {
+    //首先判断键key是否为null,若为null,则调用putForNullKey(V v)方法完成put
+    if (key == null)
+        return putForNullKey(value);
+    //程序走到这，说明key不为null了，先调用hash(int)方法，计算key.hashCode的hash值
+    int hash = hash(key.hashCode());
+    //再调用indexFor(int,int)方法求出此hash值对应在table数组的哪个下标i上 (bucket桶)
+    int i = indexFor(hash, table.length);
+    //遍历bucket桶上面的链表元素，找出HashMap中是否有相同的key存在，若存在，则替换其value值，返回原来的value值
+    for (Entry<K,V> e = table[i]; e != null; e = e.next) {
+        Object k;
+        //若元素e.hash值和上面计算的hash值相等，并且(e.key == 入参key,或者入参key equals 相等 e.key)，则说明HashMap中存在了和入参相同的key了，执行替换操作
+        if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
+            V oldValue = e.value;
+            e.value = value;
+            //在执行替换操作的时候，调用Entry对象的recordAccess(HashMap<K,V> m)方法，这个上面说过了
+            e.recordAccess(this);
+            return oldValue;
         }
     }
+    //程序走到这，说明原来HashMap中不存在key,则直接将键值对插入即可，由于插入元素，修改了HashMap的结构，因此将modeCount+1
+    modCount++;
+    //调用addEntry(int,K,V,int)方法进行键值对的插入
+    addEntry(hash, key, value, i);
+    //由于原来HashMap中不存在key，则不存在替换value值问题，因此返回null
+    return null;
+}
 
-
-    下面我们看HashMap的get操作实现:
-    //获取指定key所对应的value值
-    public V get(Object key) {
-        //若key==null,则直接调用getForNullKey()方法
-        if (key == null)
-            return getForNullKey();
-        //到这说明key != null,先获取key的hash值
-        int hash = hash(key.hashCode());
-        //在indexFor(int hash,int length)获取key落在Entry数组的哪个bucket桶上，获取该bucket桶上的元素e,进而遍历e的链表，找相对应的key,若找到则返回key所对应的
-        //value值，找不到则返回null
-        for (Entry<K,V> e = table[indexFor(hash, table.length)];
-             e != null;
-             e = e.next) {
-            Object k;
-            //若元素e.hash == 上面计算的hash值，并且(e.key 和入参key是同一个对象的引用，或者e.key和入参key equals相等)，
-            //则认为入参key和当前遍历的元素e的key是同一个,返回e的value值
-            if (e.hash == hash && ((k = e.key) == key || key.equals(k)))
-                return e.value;
-        }
-        //上面遍历了一遍也没有找到，则返回null
-        return null;
-    }
-
-    //获取key为null的value值，由上面putForNullKey方法可知，key为null的键值对，被放在了Entry数组table的第一个bucket桶(table[0])
-    private V getForNullKey() {
-        //获取Entry数组table的第一个元素e,从e开始往下遍历，若找到元素e.key 为null的，则直接返回该元素e.value值
-        for (Entry<K,V> e = table[0]; e != null; e = e.next) {
-            //找到元素e.key 为null的，则直接返回该元素e.value值
-            if (e.key == null)
-                return e.value;
-        }
-        //从table[0]开始，遍历链表一遍，没有找到key为null的，则返回null
-        return null;
-    }
-
-    //获取指定key所对应的键值对Entry,先获取key的hash值，再获取该hash值应放入哪个hash桶，然后遍历该桶中的键值对，若有则返回该键值对；若没有则返回null
-    final Entry<K,V> getEntry(Object key) {
-        //若key为null,则hash值为0；若key != null,则利用hash(int)计算key的hash值
-        int hash = (key == null) ? 0 : hash(key.hashCode());
-        //获取该hash值应放入哪个hash桶,并遍历该hash桶
-        for (Entry<K,V> e = table[indexFor(hash, table.length)];
-             e != null;
-             e = e.next) {
-            Object k;
-            //若元素e.hash == hash,并且(e.key == key，或者 key.equals(e.key)为true)，则认为入参key和当前遍历的元素e.key是同一个，返回该元素e
-            if (e.hash == hash &&
-                ((k = e.key) == key || (key != null && key.equals(k))))
-                return e;
-        }
-        //若没有则返回null
-        return null;
-    }
-
-    //判断HashMap中是否含有指定key的键值对，内部用getEntry(Object key)来实现
-    public boolean containsKey(Object key) {
-        return getEntry(key) != null;
-    }
-
-    //将指定Map中的所有元素(键值对)拷贝到当前HashMap中，对于当前HashMap中存在的key,则进行value值的替换
-    public void putAll(Map<? extends K, ? extends V> m) {
-        //若指定的Map中没有元素，则直接返回
-        int numKeysToBeAdded = m.size();
-        if (numKeysToBeAdded == 0)
-            return;
-
-        //若必要，则进行数组的扩容
-        if (numKeysToBeAdded > threshold) {
-            int targetCapacity = (int)(numKeysToBeAdded / loadFactor + 1);
-            if (targetCapacity > MAXIMUM_CAPACITY)
-                targetCapacity = MAXIMUM_CAPACITY;
-            //计算新的容量
-            int newCapacity = table.length;
-            while (newCapacity < targetCapacity)
-                newCapacity <<= 1;
-            //若新容量大于目前数组的长度，则调用resize(int)进行扩容
-            if (newCapacity > table.length)
-                resize(newCapacity);
-        }
-        //获取指定Map的迭代器，循环调用put(K k,V v)方法，进行键值对的插入
-        for (Iterator<? extends Map.Entry<? extends K, ? extends V>> i = m.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry<? extends K, ? extends V> e = i.next();
-            put(e.getKey(), e.getValue());
+下面看看key为Null时，数据的插入实现：
+先看看HashMap中原先是否有key为null的键值对存在，若存在，则替换原来的value值；若不存在，则将key为null的键值对插入到Entry数组的第一个位置table[0]
+private V putForNullKey(V value) {
+    //获取Entry数组的第一个元素:table[0],然后通过e.next进行链表的遍历，若遍历过程中有元素e.key为null,则替换该元素的值
+    for (Entry<K,V> e = table[0]; e != null; e = e.next) {
+        //说明原来之前HashMap中就已经存在key问null的键值对了，现在又插入了一个key为null的新元素，则替换掉原来的key为null的value值
+        if (e.key == null) {
+            V oldValue = e.value;
+            e.value = value;
+            //在执行替换操作的时候，调用Entry对象的recordAccess(HashMap<K,V> m)方法，这个上面说过了
+            e.recordAccess(this);
+            return oldValue;
         }
     }
+    //由于插入元素，修改了HashMap的结构，因此将modeCount+1
+    modCount++;
+    //调用addEntry(int,K,V,int)方法进行键值对的插入,这里将入参hash设置为0，K为null,插入的位置index也为0，说明key为null的元素插入在bucket[0]第一个桶上
+    addEntry(0, null, value, 0);
+    return null;
+}
 
-    下面看看HashMap的remove操作的实现：
-    public V remove(Object key) {
-        //调用方法reomveEntryForKey(Object key)来获取指定的entry
-        Entry<K,V> e = removeEntryForKey(key);
-        //若entry为null，则返回null；否则返回entry的value值
-        return (e == null ? null : e.value);
+//根据key的hashCode值，来计算key的hash值
+static int hash(int h) {
+    // This function ensures that hashCodes that differ only by
+    // constant multiples at each bit position have a bounded
+    // number of collisions (approximately 8 at default load factor).
+    h ^= (h >>> 20) ^ (h >>> 12);
+    return h ^ (h >>> 7) ^ (h >>> 4);
+}
+
+/**
+*在HashMap中要找到某个元素，需要根据key的hash值来求得对应数组中的位置,如何计算这个位置就是hash算法.
+*HashMap的数据结构是数组和链表的结合,所以我们当然希望这个HashMap里面的元素位置尽量的分布均匀些，尽量使得每个位置上的元素数量只有一个,
+*那么当我们用hash算法求得这个位置的时候，马上就可以知道对应位置的元素就是我们要的，而不用再去遍历链表.
+*所以我们首先想到的就是把hashcode对数组长度取模运算，这样一来，元素的分布相对来说是比较均匀的,但是，“模”运算的消耗还是比较大的，
+*能不能找一种更快速，消耗更小的方式那？java中时这样做的 :将hash值和数组长度按照位与&来运算
+*/
+static int indexFor(int h, int length) {
+    return h & (length-1);
+}
+
+//将指定的key,value,hash,bucketIndex 插入键值对，若此时size 大于极限threshold,则将Entry数组table扩容到原来容量的两倍
+void addEntry(int hash, K key, V value, int bucketIndex) {
+    //取出原来bucketIndex处的键值对e
+    Entry<K,V> e = table[bucketIndex];
+    //创建一个新的键值对，使用给定的hash、key、value,并将新键值对next指向e,最后将新键值对放在bucketIndex处
+    table[bucketIndex] = new Entry<K,V>(hash, key, value, e);
+    //将size+1,若此时size 大于极限threshold,则将Entry数组table扩容到原来容量的两倍
+    if (size++ >= threshold)
+        //调用resize(int)方法，进行数组的扩容
+        resize(2 * table.length);
+}
+
+//将HashMap中Entry数组table的容量扩容至新容量newCapacity,数组的扩容不但涉及到数组元素的复制，还要将原数组中的元素rehash到新的数组中，很耗时
+//如果能预估到放入HashMap中元素的大小，最好使用new HashMap(size)方式创建足够容量的HashMap，避免不必要的数组扩容(rehash操作)，提高效率
+void resize(int newCapacity) {
+    Entry[] oldTable = table;
+    int oldCapacity = oldTable.length;
+    //如果原数组的大小已经为允许的最大值MAXIMUM_CAPACITY了，则不能进行扩容了，这里仅仅将极限threshold设置为Integer.MAX_VALUE，然后返回
+    if (oldCapacity == MAXIMUM_CAPACITY) {
+        //将极限threshold设置为Integer.MAX_VALUE
+        threshold = Integer.MAX_VALUE;
+        return;
     }
+    //程序走到这，说明可以进行扩容，先创建容量为newCapacity的新Entry数组newTable
+    Entry[] newTable = new Entry[newCapacity];
+    //调用tranfer(Entry[] newTable)方法，进行数组元素的移动和rehashing
+    transfer(newTable);
+    //将新数组newTable赋值给table
+    table = newTable;
+    //计算极限threshold的最新值
+    threshold = (int)(newCapacity * loadFactor);
+}
 
-    //移除并返回指定key所关联的键值对entry,若HashMap中没有键值对和指定的key相关联，则返回null
-    final Entry<K,V> removeEntryForKey(Object key) {
-        //若key为null,则hash值为0；若key != null,则利用hash(int)计算key的hash值
-        int hash = (key == null) ? 0 : hash(key.hashCode());
-        //获取key应放入的在数组中的位置索引i
-        int i = indexFor(hash, table.length);
-        //标识前一个元素
-        Entry<K,V> prev = table[i];
-        //标识遍历过程中的当前元素
-        Entry<K,V> e = prev;
-        //遍历bucket桶table[i]中的元素，寻找对应的key
-        while (e != null) {
-            //当前元素的下一个元素
-            Entry<K,V> next = e.next;
-            Object k;
-            //元素e.hash和上面计算的hash值相等，并且(key == e.key 或者key.equals(e.key) 为true)，说明找到了指定key所对应的键值对
-            if (e.hash == hash &&
-                ((k = e.key) == key || (key != null && key.equals(k)))) {
-                //由于删除了一个元素，修改了HashMap的结构，因此将modCount+1
-                modCount++;
-                //将size-1
-                size--;
-                //若待查找的元素为桶内的第一个元素，则当前元素的下一个元素next放入数组中位置i中
-                if (prev == e)
-                    table[i] = next;
-                //否则将上一个元素的next属性指向 当前元素的next
-                else
-                    prev.next = next;
-                //当元素被remove时，调用Entry对象的recordRemove(Map<K,V> m)方法
-                e.recordRemoval(this);
-                //返回找到的当前元素
-                return e;
-            }
-            //程序走到这，说明当前元素不是要查找的元素；则将当前元素赋值给上一个元素，将下一个元素赋值给当前元素，以完成遍历
-            prev = e;
-            e = next;
+//将原Entry数组table中的所有键值对迁移到新Entry数组newTable上
+void transfer(Entry[] newTable) {
+    //原数组赋值给src
+    Entry[] src = table;
+    //新数组长度为newCapacity
+    int newCapacity = newTable.length;
+    //遍历原数组
+    for (int j = 0; j < src.length; j++) {
+        //获取原数组中的元素(键值对),赋值给e
+        Entry<K,V> e = src[j];
+        //若元素e不为null
+        if (e != null) {
+            //将当前元素设值为null
+            src[j] = null;
+            //遍历元素e所对应的bucket桶内的所有元素
+            do {
+                //获取下一个元素next
+                Entry<K,V> next = e.next;
+                //重新计算键值对e在新数组newTable中的bucketIndex位置(即rehash操作)
+                int i = indexFor(e.hash, newCapacity);
+                //这步操作，说实话，没看懂，有清楚的，请不吝赐教
+                e.next = newTable[i];
+                //将当前元素e放入新数组的i位置
+                newTable[i] = e;
+                //将下一个元素next赋值给当前元素，以便完成遍历
+                e = next;
+            } while (e != null);
         }
+    }
+}
 
-        return e;
+
+下面我们看HashMap的get操作实现:
+//获取指定key所对应的value值
+public V get(Object key) {
+    //若key==null,则直接调用getForNullKey()方法
+    if (key == null)
+        return getForNullKey();
+    //到这说明key != null,先获取key的hash值
+    int hash = hash(key.hashCode());
+    //在indexFor(int hash,int length)获取key落在Entry数组的哪个bucket桶上，获取该bucket桶上的元素e,进而遍历e的链表，找相对应的key,若找到则返回key所对应的
+    //value值，找不到则返回null
+    for (Entry<K,V> e = table[indexFor(hash, table.length)];
+         e != null;
+         e = e.next) {
+        Object k;
+        //若元素e.hash == 上面计算的hash值，并且(e.key 和入参key是同一个对象的引用，或者e.key和入参key equals相等)，
+        //则认为入参key和当前遍历的元素e的key是同一个,返回e的value值
+        if (e.hash == hash && ((k = e.key) == key || key.equals(k)))
+            return e.value;
+    }
+    //上面遍历了一遍也没有找到，则返回null
+    return null;
+}
+
+//获取key为null的value值，由上面putForNullKey方法可知，key为null的键值对，被放在了Entry数组table的第一个bucket桶(table[0])
+private V getForNullKey() {
+    //获取Entry数组table的第一个元素e,从e开始往下遍历，若找到元素e.key 为null的，则直接返回该元素e.value值
+    for (Entry<K,V> e = table[0]; e != null; e = e.next) {
+        //找到元素e.key 为null的，则直接返回该元素e.value值
+        if (e.key == null)
+            return e.value;
+    }
+    //从table[0]开始，遍历链表一遍，没有找到key为null的，则返回null
+    return null;
+}
+
+//获取指定key所对应的键值对Entry,先获取key的hash值，再获取该hash值应放入哪个hash桶，然后遍历该桶中的键值对，若有则返回该键值对；若没有则返回null
+final Entry<K,V> getEntry(Object key) {
+    //若key为null,则hash值为0；若key != null,则利用hash(int)计算key的hash值
+    int hash = (key == null) ? 0 : hash(key.hashCode());
+    //获取该hash值应放入哪个hash桶,并遍历该hash桶
+    for (Entry<K,V> e = table[indexFor(hash, table.length)];
+         e != null;
+         e = e.next) {
+        Object k;
+        //若元素e.hash == hash,并且(e.key == key，或者 key.equals(e.key)为true)，则认为入参key和当前遍历的元素e.key是同一个，返回该元素e
+        if (e.hash == hash &&
+            ((k = e.key) == key || (key != null && key.equals(k))))
+            return e;
+    }
+    //若没有则返回null
+    return null;
+}
+
+//判断HashMap中是否含有指定key的键值对，内部用getEntry(Object key)来实现
+public boolean containsKey(Object key) {
+    return getEntry(key) != null;
+}
+
+//将指定Map中的所有元素(键值对)拷贝到当前HashMap中，对于当前HashMap中存在的key,则进行value值的替换
+public void putAll(Map<? extends K, ? extends V> m) {
+    //若指定的Map中没有元素，则直接返回
+    int numKeysToBeAdded = m.size();
+    if (numKeysToBeAdded == 0)
+        return;
+
+    //若必要，则进行数组的扩容
+    if (numKeysToBeAdded > threshold) {
+        int targetCapacity = (int)(numKeysToBeAdded / loadFactor + 1);
+        if (targetCapacity > MAXIMUM_CAPACITY)
+            targetCapacity = MAXIMUM_CAPACITY;
+        //计算新的容量
+        int newCapacity = table.length;
+        while (newCapacity < targetCapacity)
+            newCapacity <<= 1;
+        //若新容量大于目前数组的长度，则调用resize(int)进行扩容
+        if (newCapacity > table.length)
+            resize(newCapacity);
+    }
+    //获取指定Map的迭代器，循环调用put(K k,V v)方法，进行键值对的插入
+    for (Iterator<? extends Map.Entry<? extends K, ? extends V>> i = m.entrySet().iterator(); i.hasNext(); ) {
+        Map.Entry<? extends K, ? extends V> e = i.next();
+        put(e.getKey(), e.getValue());
+    }
+}
+
+下面看看HashMap的remove操作的实现：
+public V remove(Object key) {
+    //调用方法reomveEntryForKey(Object key)来删除并获取指定的entry
+    Entry<K,V> e = removeEntryForKey(key);
+    //若entry为null，则返回null；否则返回entry的value值
+    return (e == null ? null : e.value);
+}
+
+//移除并返回指定key所关联的键值对entry,若HashMap中没有键值对和指定的key相关联，则返回null
+final Entry<K,V> removeEntryForKey(Object key) {
+    //若key为null,则hash值为0；若key != null,则利用hash(int)计算key的hash值
+    int hash = (key == null) ? 0 : hash(key.hashCode());
+    //获取key应放入的在数组中的位置索引i
+    int i = indexFor(hash, table.length);
+    //标识前一个元素
+    Entry<K,V> prev = table[i];
+    //标识遍历过程中的当前元素
+    Entry<K,V> e = prev;
+    //遍历bucket桶table[i]中的元素，寻找对应的key
+    while (e != null) {
+        //当前元素的下一个元素
+        Entry<K,V> next = e.next;
+        Object k;
+        //元素e.hash和上面计算的hash值相等，并且(key == e.key 或者key.equals(e.key) 为true)，说明找到了指定key所对应的键值对
+        if (e.hash == hash &&
+            ((k = e.key) == key || (key != null && key.equals(k)))) {
+            //由于删除了一个元素，修改了HashMap的结构，因此将modCount+1
+            modCount++;
+            //将size-1
+            size--;
+            //若待查找的元素为桶内的第一个元素，则当前元素的下一个元素next放入数组中位置i中
+            if (prev == e)
+                table[i] = next;
+            //否则将上一个元素的next属性指向 当前元素的next
+            else
+                prev.next = next;
+            //当元素被remove时，调用Entry对象的recordRemove(Map<K,V> m)方法
+            e.recordRemoval(this);
+            //返回找到的当前元素
+            return e;
+        }
+        //程序走到这，说明当前元素不是要查找的元素；则将当前元素赋值给上一个元素，将下一个元素赋值给当前元素，以完成遍历
+        prev = e;
+        e = next;
     }
 
-    //判断HashMap中是否包含指定的对象value
-    public boolean containsValue(Object value) {
-        //若value为null，则调用containsNullValue()方法处理
-	    if (value == null)
-            return containsNullValue();
-        //将数组table赋值给tab
-	    Entry[] tab = table;
-	    //遍历数组tab的每个索引位置(此层循环对应数组结构)
-        for (int i = 0; i < tab.length ; i++)
-            //对应指定的索引位置i,遍历在索引位置i上的元素(此层循环对应链表结构)
-            for (Entry e = tab[i] ; e != null ; e = e.next)
-                //若某个元素e.value和指定的value equals相等，则返回true
-                if (value.equals(e.value))
-                    return true;
-        //没有找到对应的value值，返回false
-	    return false;
-    }
+    return e;
+}
 
-    //判断HashMap是否包含value为null的元素
-    private boolean containsNullValue() {
-        //将数组table赋值给tab
-        Entry[] tab = table;
-        //遍历数组tab的每个索引位置(此层循环对应数组结构)
-        for (int i = 0; i < tab.length ; i++)
-            //对应指定的索引位置i,遍历在索引位置i上的元素(此层循环对应链表结构)
-            for (Entry e = tab[i] ; e != null ; e = e.next)
-                //若某个元素e.value == null，则返回true
-                if (e.value == null)
-                    return true;
-        //没有找到value值为null的，返回false
-        return false;
-    }
+//判断HashMap中是否包含指定的对象value
+public boolean containsValue(Object value) {
+    //若value为null，则调用containsNullValue()方法处理
+    if (value == null)
+        return containsNullValue();
+    //将数组table赋值给tab
+    Entry[] tab = table;
+    //遍历数组tab的每个索引位置(此层循环对应数组结构)
+    for (int i = 0; i < tab.length ; i++)
+        //对应指定的索引位置i,遍历在索引位置i上的元素(此层循环对应链表结构)
+        for (Entry e = tab[i] ; e != null ; e = e.next)
+            //若某个元素e.value和指定的value equals相等，则返回true
+            if (value.equals(e.value))
+                return true;
+    //遍历完成没有找到对应的value值，返回false
+    return false;
+}
 
-    //清除HashMap中所有的键值对，此操作过后，HashMap就是空的了
-    public void clear() {
-        //要删除所有的元素，肯定会对HashMap的结构造成改变，因此modCount+1
-        modCount++;
-        Entry[] tab = table;
-        //遍历数组，将数组中每个索引位置的设置为null
-        for (int i = 0; i < tab.length; i++)
-            tab[i] = null;
-        //将size 修改为0
-        size = 0;
-    }
+//判断HashMap是否包含value为null的元素
+private boolean containsNullValue() {
+    //将数组table赋值给tab
+    Entry[] tab = table;
+    //遍历数组tab的每个索引位置(此层循环对应数组结构)
+    for (int i = 0; i < tab.length ; i++)
+        //对应指定的索引位置i,遍历在索引位置i上的元素(此层循环对应链表结构)
+        for (Entry e = tab[i] ; e != null ; e = e.next)
+            //若某个元素e.value == null，则返回true
+            if (e.value == null)
+                return true;
+    //没有找到value值为null的，返回false
+    return false;
+}
+
+//清除HashMap中所有的键值对，此操作过后，HashMap就是空的了
+public void clear() {
+    //要删除所有的元素，肯定会对HashMap的结构造成改变，因此modCount+1
+    modCount++;
+    Entry[] tab = table;
+    //遍历数组，将数组中每个索引位置的设置为null
+    for (int i = 0; i < tab.length; i++)
+        tab[i] = null;
+    //将size 修改为0
+    size = 0;
+}
 
 

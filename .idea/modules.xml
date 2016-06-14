@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/analysejdkSrc/analysejdkSrc.iml" filepath="$PROJECT_DIR$/analysejdkSrc/analysejdkSrc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/learn/learn.iml" filepath="$PROJECT_DIR$/learn/learn.iml" />
       <module fileurl="file://$PROJECT_DIR$/multiThread/multiThread.iml" filepath="$PROJECT_DIR$/multiThread/multiThread.iml" />
     </modules>
   </component>
