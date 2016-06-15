@@ -100,11 +100,7 @@ public class InvokerClient {
         resRelationVo.setStart(0);
         resRelationVo.setResId(Arrays.asList(1515359365));
         resRelationVo.setResType(27);
-        ServiceParam serviceParam = new ServiceParam();
-        serviceParam.setEnv(Envirnment.STABLE);
-        serviceParam.setContextPath("/resource/resource-relation");
-        serviceParam.setMethodEnum(MethodEnum.POST);
-        serviceParam.setServiceName("BOH.NM.NgResourceController.queryResourceRelation");
+        ServiceParam serviceParam = new ServiceParam(MethodEnum.POST,"/resource/resource-relation",Envirnment.STABLE,"/resource/resource-relation");
         serviceParam.setInputParams(JSON.toJSONString(resRelationVo));
         boolean isTrue = client.compareEquals(serviceParam);
         System.out.println(isTrue);

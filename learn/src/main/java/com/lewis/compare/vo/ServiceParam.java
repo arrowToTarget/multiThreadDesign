@@ -76,4 +76,10 @@ public class ServiceParam {
         this.urlSplitAfter = urlSplitAfter;
     }
 
+    public ServiceParam(MethodEnum methodEnum, String serviceName, Envirnment env, String contextPath) {
+        this.methodEnum = methodEnum;
+        this.serviceName = serviceName;
+        this.env = env;
+        this.contextPath = contextPath;
+    }
 }
