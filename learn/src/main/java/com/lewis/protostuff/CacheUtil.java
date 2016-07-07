@@ -11,7 +11,7 @@ public class CacheUtil {
     private static final String my_redis_host="192.168.183.132";
     private static final String remote_redis_host="redis1.tuniu-cie.org";
 
-    private static JedisPool jedisPool = new JedisPool(my_redis_host,6379);
+    private static JedisPool jedisPool = new JedisPool(remote_redis_host,6379);
 
     public static void setCacheBytes(String key,Object value){
         Jedis jedis = null;

@@ -11,10 +11,10 @@ import java.util.*;
 public class Demo1 {
 
     public static void main(String[] args) {
-        String str = null;
+       /* String str = null;
         ResponseVo responseVo = JSON.parseObject(str, ResponseVo.class);
-        System.out.println(responseVo.toString());
-
+        System.out.println(responseVo.toString());*/
+        test1();
     }
 
     private static void test1() {
@@ -24,16 +24,16 @@ public class Demo1 {
             String key="key_"+person.getId();
             CacheUtil.setCache(key,person);
             Person person1 = CacheUtil.getCache(key, Person.class);
-            System.out.println(person1.toString());
+            //System.out.println(person1.toString());
         }
         System.out.println("noramlCache costTime ="+(System.currentTimeMillis()-beginTime));
         System.out.println("====================");
         beginTime = System.currentTimeMillis();
         for (Person person : personList) {
-            String key="key_"+person.getId();
+            String key="key1_"+person.getId();
             CacheUtil.setCacheBytes(key,person);
             Person person2 = CacheUtil.getCacheBytes(key, Person.class);
-            System.out.println(person2.toString());
+           // System.out.println(person2.toString());
         }
         System.out.println("getCacheBytes costTime ="+(System.currentTimeMillis()-beginTime));
     }

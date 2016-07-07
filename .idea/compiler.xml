@@ -24,12 +24,14 @@
         <processorPath useClasspath="true" />
         <module name="learn" />
         <module name="learning" />
+        <module name="springSrc" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="learn" target="1.5" />
       <module name="learning" target="1.5" />
       <module name="learning (1)" target="1.5" />
+      <module name="springSrc" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>
